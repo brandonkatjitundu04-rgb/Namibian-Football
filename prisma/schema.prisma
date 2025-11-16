@@ -1,0 +1,311 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  passwordHash  String
+  role          UserRole  @default(EDITOR)
+  profilePicture String?
+  bio           String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  auditLogs    AuditLog[]
+  articles     Article[]
+
+  @@map("users")
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  EDITOR
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+model League {
+  id          String   @id @default(cuid())
+  name        String
+  season      String
+  logoUrl     String?
+  tier        LeagueTier
+  gender      Gender   @default(MALE)
+  winPoints   Int      @default(3)
+  drawPoints  Int      @default(1)
+  lossPoints  Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  teams       Team[]
+  fixtures    Fixture[]
+  tableRows   TableRow[]
+
+  @@map("leagues")
+}
+
+enum LeagueTier {
+  PREMIER
+  DIVISION1
+  DIVISION2
+}
+
+model Team {
+  id          String   @id @default(cuid())
+  name        String
+  shortName   String
+  crestUrl    String?
+  stadium     String?
+  founded     Int?
+  gender      Gender   @default(MALE)
+  leagueId    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  league      League   @relation(fields: [leagueId], references: [id], onDelete: Cascade)
+  players     Player[]
+  staff       Staff[]
+  homeFixtures Fixture[] @relation("HomeTeam")
+  awayFixtures Fixture[] @relation("AwayTeam")
+  tableRow    TableRow?
+
+  @@map("teams")
+}
+
+model Player {
+  id           String         @id @default(cuid())
+  teamId       String
+  firstName    String
+  lastName     String
+  position     PlayerPosition
+  squadStatus  SquadStatus    @default(FIRST_TEAM)
+  shirtNumber  Int?
+  dob          DateTime?
+  photoUrl     String?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  team         Team           @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  matchEvents  MatchEvent[]
+
+  @@map("players")
+}
+
+enum PlayerPosition {
+  GK              // Goalkeeper
+  CB              // Center Back
+  LB              // Left Back
+  RB              // Right Back
+  CDM             // Defensive Midfielder
+  CM              // Center Midfielder
+  LM              // Left Midfielder
+  RM              // Right Midfielder
+  CAM             // Attacking Midfielder
+  LW              // Left Winger
+  RW              // Right Winger
+  CF              // Center Forward
+  ST              // Striker
+}
+
+enum SquadStatus {
+  FIRST_TEAM
+  RESERVE
+}
+
+model Staff {
+  id          String      @id @default(cuid())
+  teamId      String
+  firstName   String
+  lastName    String
+  role        StaffRole
+  photoUrl    String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  team        Team        @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@map("staff")
+}
+
+enum StaffRole {
+  MANAGER
+  COACH
+  ASSISTANT_COACH
+  PHYSIO
+  OTHER
+}
+
+model Fixture {
+  id            String        @id @default(cuid())
+  leagueId      String
+  homeTeamId    String
+  awayTeamId    String
+  kickoff       DateTime
+  venue         String?
+  status        FixtureStatus @default(SCHEDULED)
+  homeScore     Int?          @default(0)
+  awayScore     Int?          @default(0)
+  streamingUrl  String?       // Where to watch/stream the match
+  ticketUrl     String?       // Where to buy tickets
+  referee       String?       // Referee name
+  attendance    Int?          // Match attendance
+  weather       String?       // Weather conditions
+  notes         String?       // Additional notes/information
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  league      League        @relation(fields: [leagueId], references: [id], onDelete: Cascade)
+  homeTeam    Team          @relation("HomeTeam", fields: [homeTeamId], references: [id], onDelete: Cascade)
+  awayTeam    Team          @relation("AwayTeam", fields: [awayTeamId], references: [id], onDelete: Cascade)
+  events      MatchEvent[]
+
+  @@map("fixtures")
+}
+
+enum FixtureStatus {
+  SCHEDULED
+  LIVE
+  FINISHED
+  POSTPONED
+}
+
+model MatchEvent {
+  id          String        @id @default(cuid())
+  fixtureId   String
+  playerId    String?
+  type        MatchEventType
+  minute      Int
+  meta        Json?         // For additional data like assist player, card type, etc.
+  createdAt   DateTime      @default(now())
+
+  fixture     Fixture       @relation(fields: [fixtureId], references: [id], onDelete: Cascade)
+  player      Player?       @relation(fields: [playerId], references: [id], onDelete: SetNull)
+
+  @@map("match_events")
+}
+
+enum MatchEventType {
+  GOAL
+  ASSIST
+  YELLOW_CARD
+  RED_CARD
+  SUBSTITUTION
+}
+
+model TableRow {
+  id            String   @id @default(cuid())
+  leagueId      String
+  teamId        String   @unique
+  position      Int
+  played        Int      @default(0)
+  won           Int      @default(0)
+  drawn         Int      @default(0)
+  lost          Int      @default(0)
+  goalsFor      Int      @default(0)
+  goalsAgainst  Int      @default(0)
+  goalDifference Int     @default(0)
+  points        Int      @default(0)
+  updatedAt     DateTime @updatedAt
+
+  league        League   @relation(fields: [leagueId], references: [id], onDelete: Cascade)
+  team          Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@map("table_rows")
+}
+
+model Sponsor {
+  id        String       @id @default(cuid())
+  name      String
+  logoUrl   String?
+  tier      SponsorTier
+  website   String?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@map("sponsors")
+}
+
+enum SponsorTier {
+  GOLD
+  SILVER
+  BRONZE
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  userId      String
+  action      String
+  entityType  String
+  entityId    String
+  changes     Json?
+  createdAt   DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("audit_logs")
+}
+
+model Article {
+  id          String        @id @default(cuid())
+  title       String
+  slug        String        @unique
+  excerpt     String?
+  content     String
+  featuredImageUrl String?
+  videoUrl    String?
+  author      String
+  authorId    String?
+  status      ArticleStatus @default(DRAFT)
+  publishedAt DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  user        User?         @relation(fields: [authorId], references: [id], onDelete: SetNull)
+
+  @@map("articles")
+}
+
+enum ArticleStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model Advertisement {
+  id          String            @id @default(cuid())
+  title       String
+  imageUrl    String
+  linkUrl     String?
+  position    AdPosition
+  page        String?           // Specific page path, null for all pages
+  isActive    Boolean           @default(true)
+  startDate   DateTime?
+  endDate     DateTime?
+  clickCount  Int               @default(0)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@map("advertisements")
+}
+
+enum AdPosition {
+  HEADER
+  SIDEBAR
+  FOOTER
+  INLINE
+  POPUP
+}
