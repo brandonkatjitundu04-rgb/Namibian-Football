@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const user = await firestore.user.findById(session.user.id)
+    const user = await firestore.user.findById(session.user.id) as any
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
@@ -44,7 +44,7 @@ export async function PUT(request: NextRequest) {
     if (bio !== undefined) updateData.bio = bio
     if (profilePicture !== undefined) updateData.profilePicture = profilePicture
 
-    const updatedUser = await firestore.user.update(session.user.id, updateData)
+    const updatedUser = await firestore.user.update(session.user.id, updateData) as any
 
     // Log audit
     await firestore.auditLog.create({

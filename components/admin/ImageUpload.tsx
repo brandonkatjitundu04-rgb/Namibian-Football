@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
+import Image from 'next/image'
 import { Button } from '@/components/ui/Button'
 
 interface ImageUploadProps {
@@ -101,10 +102,12 @@ export function ImageUpload({ value, onChange, label = 'Upload Image', accept = 
 
       {preview && (
         <div className="relative w-32 h-32 rounded-xl border border-secondary-surface overflow-hidden bg-secondary-surface">
-          <img
+          <Image
             src={preview}
             alt="Preview"
-            className="w-full h-full object-contain"
+            fill
+            className="object-contain"
+            unoptimized={preview.startsWith('data:') || preview.startsWith('blob:')}
           />
         </div>
       )}

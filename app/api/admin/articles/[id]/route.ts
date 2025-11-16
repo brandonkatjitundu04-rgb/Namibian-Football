@@ -57,8 +57,8 @@ export async function PUT(
     const currentUser = await firestore.user.findById(session.user.id)
     if (currentUser) {
       updateData.authorId = session.user.id
-      if (!author && currentUser.name) {
-        updateData.author = currentUser.name
+      if (!author && (currentUser as any).name) {
+        updateData.author = (currentUser as any).name
       }
     }
     if (status !== undefined) {

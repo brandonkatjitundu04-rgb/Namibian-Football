@@ -172,7 +172,7 @@ export default async function FixturePage({ params }: { params: { fixtureId: str
                         {event.player.team.name} • {event.type.replace('_', ' ')}
                       </div>
                     </div>
-                    <div className="text-lg font-bold text-accent-400">{event.minute}'</div>
+                    <div className="text-lg font-bold text-accent-400">{event.minute}&apos;</div>
                   </div>
                 ))}
               </div>

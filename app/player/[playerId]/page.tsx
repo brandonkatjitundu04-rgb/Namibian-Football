@@ -138,7 +138,7 @@ export default async function PlayerPage({ params }: { params: { playerId: strin
             <h2 className="text-2xl font-bold mb-6">Match Log</h2>
             {player.matchEvents.length > 0 ? (
               <div className="space-y-4">
-                {player.matchEvents.map((event) => {
+                {player.matchEvents.map((event: any) => {
                   const fixture = event.fixture
                   const isHome = fixture.homeTeamId === player.teamId
                   const opponent = isHome ? fixture.awayTeam : fixture.homeTeam
@@ -154,7 +154,7 @@ export default async function PlayerPage({ params }: { params: { playerId: strin
                             {isHome ? 'vs' : '@'} {opponent.shortName}
                           </div>
                           <div className="text-sm text-muted">
-                            {formatDate(fixture.kickoff)} • {event.minute}'
+                            {formatDate(fixture.kickoff)} • {event.minute}&apos;
                           </div>
                         </div>
                         <span

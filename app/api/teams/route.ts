@@ -10,11 +10,11 @@ export async function GET(request: NextRequest) {
     // Fetch all teams first
     let teams = await firestore.team.findMany(
       leagueId ? { leagueId } : undefined
-    )
+    ) as any[]
 
     // Filter by gender on client side if needed (to handle teams without gender field)
     if (gender) {
-      teams = teams.filter(team => {
+      teams = teams.filter((team: any) => {
         // If team has no gender field, default to MALE for backward compatibility
         const teamGender = team.gender || 'MALE'
         return teamGender === gender

@@ -3,8 +3,8 @@ import { NewFixtureForm } from '@/components/admin/NewFixtureForm'
 
 async function getData() {
   const [leagues, teams] = await Promise.all([
-    firestore.league.findMany().then(leagues => leagues.sort((a, b) => a.name.localeCompare(b.name))),
-    firestore.team.findMany().then(teams => teams.sort((a, b) => a.name.localeCompare(b.name))),
+    firestore.league.findMany().then(leagues => (leagues as any[]).sort((a, b) => (a.name || '').localeCompare(b.name || ''))),
+    firestore.team.findMany().then(teams => (teams as any[]).sort((a, b) => (a.name || '').localeCompare(b.name || ''))),
   ])
 
   return { leagues, teams }

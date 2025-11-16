@@ -62,6 +62,7 @@ export default function LeagueTablePage() {
 
   useEffect(() => {
     fetchData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [leagueId])
 
   const fetchData = async () => {

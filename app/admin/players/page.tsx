@@ -7,9 +7,9 @@ async function getPlayers() {
   const players = await firestore.player.findMany()
   const teams = await firestore.team.findMany()
   
-  return players.map(player => ({
+  return (players as any[]).map((player: any) => ({
     ...player,
-    team: teams.find(t => t.id === player.teamId),
+    team: (teams as any[]).find((t: any) => t.id === player.teamId),
   }))
 }
 

@@ -165,8 +165,8 @@ export default function NewTeamPage() {
               required
               className="w-full px-4 py-2 rounded-xl bg-secondary-surface border border-secondary-surface focus:border-accent-400 focus:outline-none text-foreground"
             >
-              <option value="MALE">Men's</option>
-              <option value="FEMALE">Women's</option>
+              <option value="MALE">Men&apos;s</option>
+              <option value="FEMALE">Women&apos;s</option>
             </select>
           </div>
 

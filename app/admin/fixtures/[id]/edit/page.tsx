@@ -37,7 +37,7 @@ async function getFixture(id: string) {
 }
 
 async function getTeams() {
-  return await firestore.team.findMany().then(teams => teams.sort((a, b) => a.name.localeCompare(b.name)))
+  return await firestore.team.findMany().then(teams => (teams as any[]).sort((a, b) => (a.name || '').localeCompare(b.name || '')))
 }
 
 export default async function EditFixturePage({ params }: { params: { id: string } }) {

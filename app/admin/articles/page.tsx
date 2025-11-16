@@ -9,7 +9,7 @@ async function getArticles() {
     undefined,
     { orderBy: { createdAt: 'desc' } }
   )
-  return articles
+  return articles as any[]
 }
 
 export default async function ArticlesAdminPage() {

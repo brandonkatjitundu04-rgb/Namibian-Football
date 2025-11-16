@@ -2,13 +2,14 @@ import { firestore } from '@/lib/firestore'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import Link from 'next/link'
+import Image from 'next/image'
 
 async function getLeagues() {
   return await firestore.league.findMany(undefined, {
     orderBy: {
       tier: 'asc',
     },
-  })
+  }) as any[]
 }
 
 export default async function LeaguesAdminPage() {
@@ -50,11 +51,12 @@ export default async function LeaguesAdminPage() {
                 >
                   <td className="py-3 px-2">
                     {league.logoUrl ? (
-                      <div className="w-10 h-10 rounded-lg overflow-hidden bg-secondary-surface flex items-center justify-center">
-                        <img 
+                      <div className="w-10 h-10 rounded-lg overflow-hidden bg-secondary-surface flex items-center justify-center relative">
+                        <Image 
                           src={league.logoUrl} 
                           alt={`${league.name} logo`}
-                          className="w-full h-full object-contain"
+                          fill
+                          className="object-contain"
                         />
                       </div>
                     ) : (

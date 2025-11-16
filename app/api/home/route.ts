@@ -18,7 +18,6 @@ export async function GET(request: NextRequest) {
             orderBy: {
               position: 'asc',
             },
-            take: 5,
           },
         },
       }
@@ -30,12 +29,12 @@ export async function GET(request: NextRequest) {
     let league = allPremierLeagues.find((l: any) => {
       const leagueGender = l.gender || 'MALE'
       return leagueGender === gender
-    })
+    }) as any
     
     // Fallback to first premier league if no match
     if (!league && allPremierLeagues.length > 0) {
       console.log(`No league found for gender ${gender}, using first premier league as fallback`)
-      league = allPremierLeagues[0]
+      league = allPremierLeagues[0] as any
     }
     
     console.log(`Selected league: ${league?.name || 'none'} (gender: ${league?.gender || 'MALE'})`)
@@ -59,6 +58,11 @@ export async function GET(request: NextRequest) {
         team: team,
       }))
     }
+    
+    // Limit to top 5 teams for home page preview
+    if (league && league.tableRows && league.tableRows.length > 5) {
+      league.tableRows = league.tableRows.slice(0, 5)
+    }
 
     // Get upcoming fixtures - fetch all scheduled fixtures first
     let allUpcomingFixtures = await firestore.fixture.findMany(
@@ -79,13 +83,13 @@ export async function GET(request: NextRequest) {
     )
 
     // Get all teams for gender filtering
-    const allTeams = await firestore.team.findMany()
+    const allTeams = await firestore.team.findMany() as any[]
     const genderTeamIds = allTeams
-      .filter(t => {
+      .filter((t: any) => {
         const teamGender = t.gender || 'MALE'
         return teamGender === gender
       })
-      .map(t => t.id)
+      .map((t: any) => t.id)
     
     console.log(`Found ${allTeams.length} total teams, ${genderTeamIds.length} match gender ${gender}`)
     console.log(`Found ${allUpcomingFixtures.length} scheduled fixtures`)

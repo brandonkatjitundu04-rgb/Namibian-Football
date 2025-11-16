@@ -30,8 +30,8 @@ async function getStats() {
   }, {} as Record<string, { id: string; name: string; team: string; goals: number }>)
 
   const topScorers = Object.values(goalsByPlayer)
-    .filter((p) => p.goals > 0)
-    .sort((a, b) => b.goals - a.goals)
+    .filter((p: any) => p.goals > 0)
+    .sort((a: any, b: any) => b.goals - a.goals)
     .slice(0, 20)
 
   // Get assists
@@ -64,34 +64,34 @@ async function getStats() {
   }, {} as Record<string, { id: string; name: string; team: string; assists: number }>)
 
   const topAssists = Object.values(assistsByPlayer)
-    .sort((a, b) => b.assists - a.assists)
+    .sort((a: any, b: any) => b.assists - a.assists)
     .slice(0, 20)
 
   // Get clean sheets (goalkeepers with 0 goals conceded in matches)
-  const goalkeepers = await firestore.player.findMany()
-  const gks = goalkeepers.filter(p => p.position === 'GK')
+  const goalkeepers = await firestore.player.findMany() as any[]
+  const gks = goalkeepers.filter((p: any) => p.position === 'GK')
   
-  const cleanSheets = await Promise.all(gks.map(async (gk) => {
+  const cleanSheets = await Promise.all(gks.map(async (gk: any) => {
     const team = await firestore.team.findUnique(gk.teamId, {
       include: { league: true }
-    })
+    }) as any
     if (!team) return null
     
     // Get finished fixtures for this team
     const homeFixtures = await firestore.fixture.findMany(
       { leagueId: team.leagueId, status: 'FINISHED' },
       { include: { homeTeam: true, awayTeam: true } }
-    )
+    ) as any[]
     const awayFixtures = await firestore.fixture.findMany(
       { leagueId: team.leagueId, status: 'FINISHED' },
       { include: { homeTeam: true, awayTeam: true } }
-    )
+    ) as any[]
     
     const homeMatches = homeFixtures.filter(
-      (f) => f.homeTeamId === team.id && f.awayScore === 0
+      (f: any) => f.homeTeamId === team.id && f.awayScore === 0
     ).length
     const awayMatches = awayFixtures.filter(
-      (f) => f.awayTeamId === team.id && f.homeScore === 0
+      (f: any) => f.awayTeamId === team.id && f.homeScore === 0
     ).length
     
     return {
@@ -103,8 +103,8 @@ async function getStats() {
   }))
 
   const cleanSheetsFiltered = cleanSheets
-    .filter((p): p is NonNullable<typeof p> => p !== null && p.cleanSheets > 0)
-    .sort((a, b) => b.cleanSheets - a.cleanSheets)
+    .filter((p: any): p is NonNullable<typeof p> => p !== null && p.cleanSheets > 0)
+    .sort((a: any, b: any) => b.cleanSheets - a.cleanSheets)
     .slice(0, 10)
 
   return { topScorers, topAssists, cleanSheets: cleanSheetsFiltered }
@@ -123,14 +123,14 @@ export default async function StatsPage() {
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold">Top Scorers</h2>
             <CSVExportButton
-              data={topScorers}
+              data={topScorers as any[]}
               filename="top-scorers.csv"
               headers={['Position', 'Player', 'Team', 'Goals']}
             />
           </div>
-          <TopScorersChart data={topScorers} />
+          <TopScorersChart data={topScorers as any[]} />
           <div className="mt-6 space-y-2">
-            {topScorers.slice(0, 10).map((player, index) => (
+            {topScorers.slice(0, 10).map((player: any, index) => (
               <div
                 key={player.id}
                 className="flex items-center justify-between p-3 rounded-xl bg-secondary-surface/30"
@@ -153,14 +153,14 @@ export default async function StatsPage() {
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold">Top Assists</h2>
             <CSVExportButton
-              data={topAssists}
+              data={topAssists as any[]}
               filename="top-assists.csv"
               headers={['Position', 'Player', 'Team', 'Assists']}
             />
           </div>
           <div className="space-y-2">
             {topAssists.length > 0 ? (
-              topAssists.map((player, index) => (
+              topAssists.map((player: any, index) => (
                 <div
                   key={player.id}
                   className="flex items-center justify-between p-3 rounded-xl bg-secondary-surface/30"
@@ -187,14 +187,14 @@ export default async function StatsPage() {
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold">Clean Sheets</h2>
           <CSVExportButton
-            data={cleanSheets}
+            data={cleanSheets as any[]}
             filename="clean-sheets.csv"
             headers={['Position', 'Player', 'Team', 'Clean Sheets']}
           />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {cleanSheets.length > 0 ? (
-            cleanSheets.map((player, index) => (
+            cleanSheets.map((player: any, index) => (
               <div
                 key={player.id}
                 className="flex items-center justify-between p-4 rounded-xl bg-secondary-surface/30"

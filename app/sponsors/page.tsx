@@ -9,7 +9,7 @@ async function getSponsors() {
       { tier: 'asc' },
       { name: 'asc' },
     ],
-  })
+  }) as any[]
 
   return sponsors
 }
@@ -29,13 +29,13 @@ export default async function SponsorsPage() {
     BRONZE: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
   }
 
-  const groupedSponsors = sponsors.reduce((acc, sponsor) => {
+  const groupedSponsors = sponsors.reduce((acc, sponsor: any) => {
     if (!acc[sponsor.tier]) {
       acc[sponsor.tier] = []
     }
     acc[sponsor.tier].push(sponsor)
     return acc
-  }, {} as Record<string, typeof sponsors>)
+  }, {} as Record<string, any[]>)
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
@@ -52,7 +52,7 @@ export default async function SponsorsPage() {
           <div key={tier} className="mb-12">
             <h2 className="text-2xl font-bold mb-6">{tierLabels[tier]}</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {tierSponsors.map((sponsor) => (
+              {tierSponsors.map((sponsor: any) => (
                 <Card key={sponsor.id} className="p-6">
                   <div className="flex flex-col items-center text-center">
                     {sponsor.logoUrl && (

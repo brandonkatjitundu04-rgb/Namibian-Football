@@ -20,7 +20,7 @@ export async function GET(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    const user = await firestore.user.findById(params.id)
+    const user = await firestore.user.findById(params.id) as any
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
@@ -57,7 +57,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Only super admin can update users' }, { status: 403 })
     }
 
-    const user = await firestore.user.findById(params.id)
+    const user = await firestore.user.findById(params.id) as any
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
@@ -97,7 +97,7 @@ export async function PUT(
       updateData.passwordHash = await bcrypt.hash(password, 10)
     }
 
-    const updatedUser = await firestore.user.update(params.id, updateData)
+    const updatedUser = await firestore.user.update(params.id, updateData) as any
 
     // Log audit
     await firestore.auditLog.create({
@@ -135,7 +135,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Only super admin can delete users' }, { status: 403 })
     }
 
-    const user = await firestore.user.findById(params.id)
+    const user = await firestore.user.findById(params.id) as any
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }

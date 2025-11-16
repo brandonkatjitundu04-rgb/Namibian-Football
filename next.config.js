@@ -9,9 +9,7 @@ const nextConfig = {
     // Remove unoptimized for production - Next.js will optimize images
     // unoptimized: true, // Only for local development if needed
   },
-  experimental: {
-    serverActions: true,
-  },
+  // Server Actions are available by default in Next.js 14, no need for experimental flag
   output: 'standalone',
 }
 

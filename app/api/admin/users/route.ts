@@ -17,17 +17,17 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    const users = await firestore.user.findMany()
+    const users = await firestore.user.findMany() as any[]
     
     // Filter out password hashes and filter by role if not super admin
     const filteredUsers = users
-      .filter(user => {
+      .filter((user: any) => {
         // Super admin can see all users
         if (userRole === 'SUPER_ADMIN') return true
         // Regular admins can only see non-super-admins
         return user.role !== 'SUPER_ADMIN'
       })
-      .map(({ passwordHash, ...user }) => user) // Remove password hash from response
+      .map(({ passwordHash, ...user }: any) => user) // Remove password hash from response
 
     return NextResponse.json(filteredUsers)
   } catch (error) {
@@ -100,7 +100,8 @@ export async function POST(request: NextRequest) {
     })
 
     // Return user without password hash
-    const { passwordHash: _, ...userWithoutPassword } = user
+    const userAny = user as any
+    const { passwordHash: _, ...userWithoutPassword } = userAny
     return NextResponse.json(userWithoutPassword, { status: 201 })
   } catch (error) {
     console.error('Error creating user:', error)

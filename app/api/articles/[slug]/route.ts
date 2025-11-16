@@ -7,7 +7,7 @@ export async function GET(
   { params }: { params: { slug: string } }
 ) {
   try {
-    const article = await firestore.article.findBySlug(params.slug)
+    const article = await firestore.article.findBySlug(params.slug) as any
 
     if (!article) {
       return NextResponse.json({ error: 'Article not found' }, { status: 404 })

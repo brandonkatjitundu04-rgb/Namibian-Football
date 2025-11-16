@@ -9,7 +9,7 @@ async function getSponsors() {
       { tier: 'asc' },
       { name: 'asc' },
     ],
-  })
+  }) as any[]
 }
 
 export default async function SponsorsAdminPage() {

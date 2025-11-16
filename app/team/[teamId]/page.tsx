@@ -81,8 +81,8 @@ export default async function TeamPage({ params }: { params: { teamId: string } 
   }
 
   // Group players by squad status (default to FIRST_TEAM if not set for backward compatibility)
-  const firstTeamPlayers = team.players?.filter(p => !p.squadStatus || p.squadStatus === 'FIRST_TEAM') || []
-  const reservePlayers = team.players?.filter(p => p.squadStatus === 'RESERVE') || []
+  const firstTeamPlayers = team.players?.filter((p: any) => !p.squadStatus || p.squadStatus === 'FIRST_TEAM') || []
+  const reservePlayers = team.players?.filter((p: any) => p.squadStatus === 'RESERVE') || []
 
   const staffRoleLabels: Record<string, string> = {
     MANAGER: 'Manager',

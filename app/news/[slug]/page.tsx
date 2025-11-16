@@ -11,24 +11,24 @@ export const revalidate = 300
 
 async function getArticle(slug: string) {
   try {
-    const article: any = await firestore.article.findBySlug(slug)
+    const article = await firestore.article.findBySlug(slug) as any
     
     if (!article || article.status !== 'PUBLISHED') {
       return null
     }
     
-    // Fetch author profile if authorId exists
-    if (article.authorId) {
-      const author = await firestore.user.findById(article.authorId)
-      if (author) {
-        article.authorProfile = {
-          name: author.name || article.author,
-          email: author.email,
-          profilePicture: author.profilePicture,
-          bio: author.bio,
-        }
-      }
-    }
+            // Fetch author profile if authorId exists
+            if (article.authorId) {
+              const author = await firestore.user.findById(article.authorId) as any
+              if (author) {
+                article.authorProfile = {
+                  name: author.name || article.author,
+                  email: author.email,
+                  profilePicture: author.profilePicture,
+                  bio: author.bio,
+                }
+              }
+            }
     
     return article
   } catch (error) {
@@ -45,9 +45,9 @@ async function getRelatedArticles(currentSlug: string) {
         orderBy: { publishedAt: 'desc' },
         take: 4,
       }
-    )
+    ) as any[]
     // Filter out current article
-    return articles.filter(a => a.slug !== currentSlug).slice(0, 3)
+    return articles.filter((a: any) => a.slug !== currentSlug).slice(0, 3)
   } catch (error) {
     console.error('Error fetching related articles:', error)
     return []

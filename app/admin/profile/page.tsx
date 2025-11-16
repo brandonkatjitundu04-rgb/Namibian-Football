@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
+import Image from 'next/image'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { ImageUpload } from '@/components/admin/ImageUpload'
@@ -115,10 +116,11 @@ export default function ProfilePage() {
           <div className="flex items-center gap-6 mb-6 pb-6 border-b border-secondary-surface">
             {formData.profilePicture ? (
               <div className="w-24 h-24 relative rounded-full overflow-hidden">
-                <img
+                <Image
                   src={formData.profilePicture}
                   alt={profile?.name || 'Profile'}
-                  className="w-full h-full object-cover"
+                  fill
+                  className="object-cover"
                 />
               </div>
             ) : (

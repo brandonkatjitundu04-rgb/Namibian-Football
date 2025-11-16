@@ -38,17 +38,19 @@ export default async function FixturesPage() {
     }
     acc[date].push(fixture)
     return acc
-  }, {} as Record<string, typeof fixtures>)
+  }, {} as Record<string, any[]>)
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       <h1 className="text-4xl font-bold mb-8">Fixtures & Results</h1>
 
-      {Object.entries(groupedFixtures).map(([date, dateFixtures]) => (
+      {Object.entries(groupedFixtures).map(([date, dateFixtures]) => {
+        const fixtures = dateFixtures as any[]
+        return (
         <Card key={date} className="p-6 mb-6">
           <h2 className="text-xl font-bold mb-4">{date}</h2>
           <div className="space-y-4">
-            {dateFixtures.map((fixture) => (
+            {fixtures.map((fixture: any) => (
               <Link
                 key={fixture.id}
                 href={`/fixture/${fixture.id}`}
@@ -100,7 +102,8 @@ export default async function FixturesPage() {
             ))}
           </div>
         </Card>
-      ))}
+        )
+      })}
     </div>
   )
 }

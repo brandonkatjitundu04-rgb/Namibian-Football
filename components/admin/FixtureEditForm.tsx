@@ -184,7 +184,7 @@ export function FixtureEditForm({ fixture, teams }: FixtureEditFormProps) {
                 className="flex items-center justify-between p-3 rounded-xl bg-secondary-surface/30"
               >
                 <div>
-                  <span className="font-semibold">{event.minute}'</span>
+                  <span className="font-semibold">{event.minute}&apos;</span>
                   <span className="ml-2">{event.type.replace('_', ' ')}</span>
                   {event.player && (
                     <span className="ml-2 text-muted">

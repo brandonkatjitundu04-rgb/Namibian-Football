@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
 
     // Get current user for author
     const currentUser = await firestore.user.findById(session.user.id)
-    const authorName = author || currentUser?.name || session.user.name || session.user.email
+    const authorName = author || (currentUser as any)?.name || session.user.name || session.user.email
 
     // Generate slug if not provided
     const finalSlug = slug || title

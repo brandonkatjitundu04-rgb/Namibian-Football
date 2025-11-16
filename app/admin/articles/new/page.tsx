@@ -30,6 +30,7 @@ export default function NewArticlePage() {
         author: session.user.name || session.user.email || '',
       }))
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session])
 
   const handleSubmit = async (e: React.FormEvent) => {

@@ -17,7 +17,7 @@ export function GenderToggle() {
             : 'text-muted hover:text-foreground'
         )}
       >
-        Men's
+        Men&apos;s
       </button>
       <button
         onClick={() => setGender('FEMALE')}
@@ -28,7 +28,7 @@ export function GenderToggle() {
             : 'text-muted hover:text-foreground'
         )}
       >
-        Women's
+        Women&apos;s
       </button>
     </div>
   )

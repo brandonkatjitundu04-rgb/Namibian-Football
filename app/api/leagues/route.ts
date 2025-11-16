@@ -11,11 +11,11 @@ export async function GET(request: NextRequest) {
     let leagues = await firestore.league.findMany(
       tier ? { tier } : undefined,
       { orderBy: { tier: 'asc' } }
-    )
+    ) as any[]
 
     // Filter by gender on client side if needed (to handle leagues without gender field)
     if (gender) {
-      leagues = leagues.filter(league => {
+      leagues = leagues.filter((league: any) => {
         // If league has no gender field, default to MALE for backward compatibility
         const leagueGender = league.gender || 'MALE'
         return leagueGender === gender
