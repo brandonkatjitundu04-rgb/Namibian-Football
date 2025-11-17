@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient, PlayerPosition } from '@prisma/client'
 import * as bcrypt from 'bcryptjs'
 
 const prisma = new PrismaClient()
@@ -73,7 +73,6 @@ async function main() {
     console.log(`✅ Created team: ${team.name}`)
 
     // Create players for each team (22 players)
-    const positions = ['GK', 'DF', 'MF', 'FW']
     const firstNames = [
       'John', 'Michael', 'David', 'James', 'Robert', 'William', 'Richard', 'Joseph',
       'Thomas', 'Charles', 'Daniel', 'Matthew', 'Mark', 'Donald', 'Anthony', 'Paul',
@@ -86,7 +85,9 @@ async function main() {
     ]
 
     for (let i = 0; i < 22; i++) {
-      const position = positions[i % 4] as 'GK' | 'DF' | 'MF' | 'FW'
+      // Define positions using the correct PlayerPosition enum
+      const positions: PlayerPosition[] = [PlayerPosition.GK, PlayerPosition.DF, PlayerPosition.MF, PlayerPosition.FW]
+      const position = positions[i % 4]
       const shirtNumber = i < 11 ? i + 1 : i + 1
       const firstName = firstNames[i % firstNames.length]
       const lastName = lastNames[i % lastNames.length]
