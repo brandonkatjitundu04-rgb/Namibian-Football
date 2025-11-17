@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { firestore } from '@/lib/firestore'
 
+export const dynamic = 'force-dynamic'
+
 // GET active advertisements for public display
 export async function GET(request: NextRequest) {
   try {

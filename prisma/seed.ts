@@ -199,27 +199,27 @@ async function main() {
   const sponsors = [
     {
       name: 'Namibia Breweries',
-      tier: 'GOLD',
+      tier: 'GOLD' as const,
       website: 'https://www.nambrew.com',
     },
     {
       name: 'MTC Namibia',
-      tier: 'GOLD',
+      tier: 'GOLD' as const,
       website: 'https://www.mtc.com.na',
     },
     {
       name: 'Bank Windhoek',
-      tier: 'SILVER',
+      tier: 'SILVER' as const,
       website: 'https://www.bankwindhoek.com.na',
     },
     {
       name: 'FNB Namibia',
-      tier: 'SILVER',
+      tier: 'SILVER' as const,
       website: 'https://www.fnbnamibia.com.na',
     },
     {
       name: 'Namibia Sport Commission',
-      tier: 'BRONZE',
+      tier: 'BRONZE' as const,
     },
   ]
 

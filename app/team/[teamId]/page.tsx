@@ -61,7 +61,7 @@ export default async function TeamPage({ params }: { params: { teamId: string } 
   }
 
   const allFixtures = [...team.homeFixtures, ...team.awayFixtures].sort(
-    (a, b) => new Date(b.kickoff).getTime() - new Date(a.kickoff).getTime()
+    (a: any, b: any) => new Date(b.kickoff).getTime() - new Date(a.kickoff).getTime()
   )
 
   const positionLabels: Record<string, string> = {
@@ -138,8 +138,8 @@ export default async function TeamPage({ params }: { params: { teamId: string } 
                     { positions: ['CB', 'LB', 'RB'], label: 'Defenders' },
                     { positions: ['CDM', 'CM', 'LM', 'RM', 'CAM'], label: 'Midfielders' },
                     { positions: ['LW', 'RW', 'CF', 'ST'], label: 'Forwards' },
-                  ].map((group) => {
-                    const playersInGroup = firstTeamPlayers.filter((p) => 
+                  ].map((group: any) => {
+                    const playersInGroup = firstTeamPlayers.filter((p: any) => 
                       group.positions.includes(p.position)
                     )
                     if (playersInGroup.length === 0) return null
@@ -150,7 +150,7 @@ export default async function TeamPage({ params }: { params: { teamId: string } 
                           {group.label}
                         </h4>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                          {playersInGroup.map((player) => (
+                          {playersInGroup.map((player: any) => (
                             <Link
                               key={player.id}
                               href={`/player/${player.id}`}
@@ -193,7 +193,7 @@ export default async function TeamPage({ params }: { params: { teamId: string } 
               <div>
                 <h3 className="text-xl font-semibold mb-4 text-muted">Reserve Squad</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {reservePlayers.map((player) => (
+                  {reservePlayers.map((player: any) => (
                     <Link
                       key={player.id}
                       href={`/player/${player.id}`}
@@ -237,7 +237,7 @@ export default async function TeamPage({ params }: { params: { teamId: string } 
             <Card className="p-6">
               <h2 className="text-2xl font-bold mb-6">Staff</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {team.staff.map((member) => (
+                {team.staff.map((member: any) => (
                   <div
                     key={member.id}
                     className="flex items-center gap-3 p-3 rounded-xl bg-secondary-surface/30"
@@ -273,7 +273,7 @@ export default async function TeamPage({ params }: { params: { teamId: string } 
             <h2 className="text-2xl font-bold mb-6">Recent Fixtures</h2>
             {allFixtures.length > 0 ? (
               <div className="space-y-4">
-                {allFixtures.slice(0, 10).map((fixture) => {
+                {allFixtures.slice(0, 10).map((fixture: any) => {
                   const isHome = fixture.homeTeamId === team.id
                   const opponent = isHome ? fixture.awayTeam : fixture.homeTeam
                   const teamScore = isHome ? fixture.homeScore : fixture.awayScore

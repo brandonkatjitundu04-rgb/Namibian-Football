@@ -33,12 +33,20 @@ const COLLECTIONS = {
   ADVERTISEMENTS: 'advertisements',
 } as const
 
-// Helper to build queries
+// Helper to build queries with error handling
 function buildQuery(collectionName: string, constraints: QueryConstraint[]): Query {
-  const collectionRef = collection(db, collectionName)
-  return constraints.length > 0 
-    ? query(collectionRef, ...constraints)
-    : query(collectionRef)
+  try {
+    if (!collectionName) {
+      throw new Error('Collection name is required')
+    }
+    const collectionRef = collection(db, collectionName)
+    return constraints.length > 0 
+      ? query(collectionRef, ...constraints)
+      : query(collectionRef)
+  } catch (error: any) {
+    console.error(`Error building query for ${collectionName}:`, error)
+    throw new Error(`Failed to build query: ${error.message || error}`)
+  }
 }
 
 // League service
@@ -76,18 +84,19 @@ export const leagueService = {
     })
     
     // Sort in memory if orderBy is specified
-    if (options?.orderBy) {
-      leagues.sort((a, b) => {
+    if (options?.orderBy?.tier) {
+      const orderDirection = options.orderBy.tier
+      leagues.sort((a: any, b: any) => {
         const tierOrder = { PREMIER: 1, DIVISION1: 2, DIVISION2: 3 }
         const aOrder = tierOrder[a.tier as keyof typeof tierOrder] || 999
         const bOrder = tierOrder[b.tier as keyof typeof tierOrder] || 999
-        return options.orderBy!.tier === 'asc' ? aOrder - bOrder : bOrder - aOrder
+        return orderDirection === 'asc' ? aOrder - bOrder : bOrder - aOrder
       })
     }
     
     // Include relationships if needed
     if (options?.include) {
-      leagues = await Promise.all(leagues.map(async (league) => {
+      leagues = await Promise.all(leagues.map(async (league: any) => {
         if (options.include?.tableRows) {
           league.tableRows = await tableRowService.findByLeague(league.id, {
             includeTeam: options.include.tableRows.include?.team,
@@ -297,7 +306,7 @@ export const teamService = {
     
     // Filter by IDs if provided
     if (filters?.ids) {
-      teams = teams.filter(t => filters.ids!.includes(t.id))
+      teams = teams.filter((t: any) => filters.ids!.includes(t.id))
     }
     
     return teams
@@ -361,11 +370,11 @@ export const tableRowService = {
     }))
     
     // Filter out deleted rows (position 999) and sort by position
-    const filteredRows = rows.filter(row => row.position !== 999 && row.position !== undefined)
+    const filteredRows = rows.filter((row: any) => row.position !== 999 && row.position !== undefined)
     
     // Always sort in memory to avoid Firestore index requirement
     const sortOrder = options?.orderBy?.position || 'asc'
-    filteredRows.sort((a, b) => {
+    filteredRows.sort((a: any, b: any) => {
       return sortOrder === 'asc' 
         ? (a.position || 999) - (b.position || 999)
         : (b.position || 999) - (a.position || 999)
@@ -486,7 +495,10 @@ export const fixtureService = {
     }
     
     if (filters?.kickoff?.gte) {
-      constraints.push(where('kickoff', '>=', dateToTimestamp(filters.kickoff.gte)))
+      const kickoffTimestamp = dateToTimestamp(filters.kickoff.gte)
+      if (kickoffTimestamp) {
+        constraints.push(where('kickoff', '>=', kickoffTimestamp))
+      }
     }
     
     // Firestore requires composite indexes when filtering and ordering on different fields
@@ -503,8 +515,8 @@ export const fixtureService = {
     // Otherwise, always do client-side sorting to avoid index requirements
     const useFirestoreOrderBy = !hasAnyFilter && hasOrderBy
     
-    if (useFirestoreOrderBy) {
-      constraints.push(orderBy('kickoff', options.orderBy!.kickoff))
+    if (useFirestoreOrderBy && options?.orderBy?.kickoff) {
+      constraints.push(orderBy('kickoff', options.orderBy.kickoff))
     }
     
     if (options?.take && useFirestoreOrderBy) {
@@ -560,11 +572,12 @@ export const fixtureService = {
     
     // Client-side sorting if needed (to avoid index requirements)
     // Do this whenever we have filters + orderBy (which is most cases)
-    if (hasAnyFilter && hasOrderBy && options?.orderBy) {
-      fixtures.sort((a, b) => {
+    if (hasAnyFilter && hasOrderBy && options?.orderBy?.kickoff) {
+      const orderDirection = options.orderBy.kickoff
+      fixtures.sort((a: any, b: any) => {
         const aTime = a.kickoff?.getTime?.() || 0
         const bTime = b.kickoff?.getTime?.() || 0
-        return options.orderBy!.kickoff === 'asc' ? aTime - bTime : bTime - aTime
+        return orderDirection === 'asc' ? aTime - bTime : bTime - aTime
       })
     }
     
@@ -614,9 +627,13 @@ export const fixtureService = {
 
   async create(data: any) {
     const docRef = doc(collection(db, COLLECTIONS.FIXTURES))
+    const kickoffTimestamp = dateToTimestamp(data.kickoff)
+    if (!kickoffTimestamp && data.kickoff) {
+      throw new Error('Invalid kickoff date provided')
+    }
     const fixtureData = {
       ...data,
-      kickoff: dateToTimestamp(data.kickoff),
+      kickoff: kickoffTimestamp,
       createdAt: Timestamp.now(),
       updatedAt: Timestamp.now(),
     }
@@ -631,7 +648,11 @@ export const fixtureService = {
       updatedAt: Timestamp.now(),
     }
     if (data.kickoff) {
-      updateData.kickoff = dateToTimestamp(data.kickoff)
+      const kickoffTimestamp = dateToTimestamp(data.kickoff)
+      if (!kickoffTimestamp) {
+        throw new Error('Invalid kickoff date provided')
+      }
+      updateData.kickoff = kickoffTimestamp
     }
     await updateDoc(docRef, updateData)
     
@@ -703,7 +724,7 @@ export const playerService = {
     })
     
     // Sort by position, then shirt number
-    players.sort((a, b) => {
+    players.sort((a: any, b: any) => {
       const positionOrder = { GK: 1, DF: 2, MF: 3, FW: 4 }
       const aPos = positionOrder[a.position as keyof typeof positionOrder] || 999
       const bPos = positionOrder[b.position as keyof typeof positionOrder] || 999
@@ -763,7 +784,7 @@ export const staffService = {
     
     // Sort by role
     const roleOrder = { MANAGER: 1, COACH: 2, ASSISTANT_COACH: 3, PHYSIO: 4, OTHER: 5 }
-    staff.sort((a, b) => {
+    staff.sort((a: any, b: any) => {
       const aRole = roleOrder[a.role as keyof typeof roleOrder] || 999
       const bRole = roleOrder[b.role as keyof typeof roleOrder] || 999
       return aRole - bRole
@@ -811,8 +832,11 @@ export const matchEventService = {
       }
       
       if (options?.include?.player && data.playerId) {
+        const playerInclude = options.include.player.include
         event.player = await playerService.findUnique(data.playerId, {
-          include: options.include.player.include,
+          include: playerInclude?.team 
+            ? { team: {} }
+            : undefined,
         })
       }
       
@@ -820,12 +844,13 @@ export const matchEventService = {
     }))
     
     // Sort by fixture kickoff if needed
-    if (options?.orderBy?.fixture) {
-      events.sort((a, b) => {
+    if (options?.orderBy?.fixture?.kickoff) {
+      const orderDirection = options.orderBy.fixture.kickoff
+      events.sort((a: any, b: any) => {
         if (!a.fixture || !b.fixture) return 0
         const aTime = a.fixture.kickoff.getTime()
         const bTime = b.fixture.kickoff.getTime()
-        return options.orderBy!.fixture!.kickoff === 'desc' ? bTime - aTime : aTime - bTime
+        return orderDirection === 'desc' ? bTime - aTime : aTime - bTime
       })
     }
     
@@ -853,8 +878,9 @@ export const sponsorService = {
     
     // Sort if orderBy is specified
     if (options?.orderBy) {
-      sponsors.sort((a, b) => {
-        for (const order of options.orderBy!) {
+      const orderByArray = options.orderBy
+      sponsors.sort((a: any, b: any) => {
+        for (const order of orderByArray) {
           if (order.tier) {
             const tierOrder = { GOLD: 1, SILVER: 2, BRONZE: 3 }
             const aTier = tierOrder[a.tier as keyof typeof tierOrder] || 999
@@ -1008,7 +1034,7 @@ export const articleService = {
     const hasFilter = !!filters?.status
     const hasOrderBy = !!options?.orderBy
     
-    if (!hasFilter && hasOrderBy) {
+    if (!hasFilter && hasOrderBy && options?.orderBy) {
       if (options.orderBy.publishedAt) {
         constraints.push(orderBy('publishedAt', options.orderBy.publishedAt))
       } else if (options.orderBy.createdAt) {
@@ -1036,15 +1062,16 @@ export const articleService = {
     
     // Client-side sorting if we have filters
     if (hasFilter && hasOrderBy && options?.orderBy) {
-      articles.sort((a, b) => {
-        if (options.orderBy!.publishedAt) {
+      const orderByOptions = options.orderBy
+      articles.sort((a: any, b: any) => {
+        if (orderByOptions.publishedAt) {
           const aTime = a.publishedAt?.getTime?.() || 0
           const bTime = b.publishedAt?.getTime?.() || 0
-          return options.orderBy!.publishedAt === 'desc' ? bTime - aTime : aTime - bTime
-        } else if (options.orderBy!.createdAt) {
+          return orderByOptions.publishedAt === 'desc' ? bTime - aTime : aTime - bTime
+        } else if (orderByOptions.createdAt) {
           const aTime = a.createdAt?.getTime?.() || 0
           const bTime = b.createdAt?.getTime?.() || 0
-          return options.orderBy!.createdAt === 'desc' ? bTime - aTime : aTime - bTime
+          return orderByOptions.createdAt === 'desc' ? bTime - aTime : aTime - bTime
         }
         return 0
       })
@@ -1159,7 +1186,7 @@ export const advertisementService = {
     
     // Filter by date range
     const now = new Date()
-    ads = ads.filter(ad => {
+    ads = ads.filter((ad: any) => {
       // If startDate exists and is in the future, exclude
       if (ad.startDate) {
         const start = new Date(ad.startDate)
@@ -1190,15 +1217,16 @@ export const advertisementService = {
     
     console.log(`After filtering: ${ads.length} ads remaining for position ${filters?.position}`)
     if (ads.length > 0) {
+      const sampleAd = ads[0] as any
       console.log('Sample ad:', {
-        id: ads[0].id,
-        title: ads[0].title,
-        position: ads[0].position,
-        page: ads[0].page,
-        isActive: ads[0].isActive,
-        startDate: ads[0].startDate,
-        endDate: ads[0].endDate,
-        imageUrl: ads[0].imageUrl ? 'present' : 'missing',
+        id: sampleAd.id,
+        title: sampleAd.title,
+        position: sampleAd.position,
+        page: sampleAd.page,
+        isActive: sampleAd.isActive,
+        startDate: sampleAd.startDate,
+        endDate: sampleAd.endDate,
+        imageUrl: sampleAd.imageUrl ? 'present' : 'missing',
       })
     }
     
@@ -1262,7 +1290,7 @@ export const advertisementService = {
     const ad = await this.findUnique(id)
     if (ad) {
       await updateDoc(docRef, {
-        clickCount: (ad.clickCount || 0) + 1,
+        clickCount: ((ad as any).clickCount || 0) + 1,
         updatedAt: Timestamp.now(),
       })
     }

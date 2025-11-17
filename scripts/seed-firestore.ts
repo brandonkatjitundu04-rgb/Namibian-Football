@@ -33,6 +33,18 @@ const COLLECTIONS = {
 async function main() {
   console.log('🌱 Seeding Firestore database...')
 
+  // Validate Firebase connection
+  try {
+    // Test Firestore connection
+    const testQuery = query(collection(db, COLLECTIONS.USERS), limit(1))
+    await getDocs(testQuery)
+    console.log('✅ Firebase connection verified')
+  } catch (error: any) {
+    console.error('❌ Firebase connection failed:', error.message)
+    console.error('Please check your Firebase configuration in .env file')
+    throw new Error('Firebase connection failed. Please check your configuration.')
+  }
+
   // Create or update admin user
   const adminEmail = 'branden.katjitundu04@gmail.com'
   const adminPassword = 'wozza2025!'

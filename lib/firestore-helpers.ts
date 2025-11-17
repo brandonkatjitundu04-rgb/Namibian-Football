@@ -32,55 +32,117 @@ export const timestampToDate = (timestamp: any): Date | null => {
 }
 
 // Helper to convert Date to Firestore Timestamp
-export const dateToTimestamp = (date: Date | string) => {
-  if (typeof date === 'string') {
-    date = new Date(date)
+export const dateToTimestamp = (date: Date | string | null | undefined): Timestamp | null => {
+  if (!date) return null
+  
+  try {
+    let dateObj: Date
+    if (typeof date === 'string') {
+      dateObj = new Date(date)
+      // Check if date is valid
+      if (isNaN(dateObj.getTime())) {
+        console.warn('Invalid date string provided to dateToTimestamp:', date)
+        return null
+      }
+    } else {
+      dateObj = date
+    }
+    
+    // Check if date is valid
+    if (isNaN(dateObj.getTime())) {
+      console.warn('Invalid date provided to dateToTimestamp:', date)
+      return null
+    }
+    
+    return Timestamp.fromDate(dateObj)
+  } catch (error) {
+    console.error('Error converting date to timestamp:', error)
+    return null
   }
-  return Timestamp.fromDate(date)
 }
 
 // Generic CRUD operations
 export const firestoreHelpers = {
   // Create or update a document
   async set(collectionName: string, id: string, data: any) {
-    const docRef = doc(db, collectionName, id)
-    // Convert Date objects to Timestamps
-    const processedData = processDatesForFirestore(data)
-    await setDoc(docRef, processedData, { merge: true })
-    return docRef
+    try {
+      if (!collectionName || !id) {
+        throw new Error('Collection name and document ID are required')
+      }
+      const docRef = doc(db, collectionName, id)
+      // Convert Date objects to Timestamps
+      const processedData = processDatesForFirestore(data)
+      await setDoc(docRef, processedData, { merge: true })
+      return docRef
+    } catch (error: any) {
+      console.error(`Error setting document in ${collectionName}:`, error)
+      throw new Error(`Failed to set document: ${error.message || error}`)
+    }
   },
 
   // Get a single document
   async get(collectionName: string, id: string) {
-    const docRef = doc(db, collectionName, id)
-    const docSnap = await getDoc(docRef)
-    if (docSnap.exists()) {
-      return { id: docSnap.id, ...docSnap.data() }
+    try {
+      if (!collectionName || !id) {
+        throw new Error('Collection name and document ID are required')
+      }
+      const docRef = doc(db, collectionName, id)
+      const docSnap = await getDoc(docRef)
+      if (docSnap.exists()) {
+        return { id: docSnap.id, ...docSnap.data() }
+      }
+      return null
+    } catch (error: any) {
+      console.error(`Error getting document from ${collectionName}:`, error)
+      throw new Error(`Failed to get document: ${error.message || error}`)
     }
-    return null
   },
 
   // Get all documents in a collection
   async getAll(collectionName: string, constraints: QueryConstraint[] = []) {
-    const collectionRef = collection(db, collectionName)
-    const q = constraints.length > 0 
-      ? query(collectionRef, ...constraints)
-      : query(collectionRef)
-    const querySnapshot = await getDocs(q)
-    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+    try {
+      if (!collectionName) {
+        throw new Error('Collection name is required')
+      }
+      const collectionRef = collection(db, collectionName)
+      const q = constraints.length > 0 
+        ? query(collectionRef, ...constraints)
+        : query(collectionRef)
+      const querySnapshot = await getDocs(q)
+      return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+    } catch (error: any) {
+      console.error(`Error getting all documents from ${collectionName}:`, error)
+      throw new Error(`Failed to get documents: ${error.message || error}`)
+    }
   },
 
   // Update a document
   async update(collectionName: string, id: string, data: any) {
-    const docRef = doc(db, collectionName, id)
-    const processedData = processDatesForFirestore(data)
-    await updateDoc(docRef, processedData)
+    try {
+      if (!collectionName || !id) {
+        throw new Error('Collection name and document ID are required')
+      }
+      const docRef = doc(db, collectionName, id)
+      const processedData = processDatesForFirestore(data)
+      await updateDoc(docRef, processedData)
+    } catch (error: any) {
+      console.error(`Error updating document in ${collectionName}:`, error)
+      throw new Error(`Failed to update document: ${error.message || error}`)
+    }
   },
 
   // Delete a document
   async delete(collectionName: string, id: string) {
-    const docRef = doc(db, collectionName, id)
-    await deleteDoc(docRef)
+    try {
+      if (!collectionName || !id) {
+        throw new Error('Collection name and document ID are required')
+      }
+      const docRef = doc(db, collectionName, id)
+      await deleteDoc(docRef)
+    } catch (error: any) {
+      console.error(`Error deleting document from ${collectionName}:`, error)
+      throw new Error(`Failed to delete document: ${error.message || error}`)
+    }
   },
 
   // Query helper
