@@ -86,9 +86,25 @@ async function main() {
 
     for (let i = 0; i < 22; i++) {
       // Define positions using the correct PlayerPosition enum
-      const positions: PlayerPosition[] = [PlayerPosition.GK, PlayerPosition.DF, PlayerPosition.MF, PlayerPosition.FW]
-      const position = positions[i % 4]
-      const shirtNumber = i < 11 ? i + 1 : i + 1
+      // Available: GK, CB, LB, RB, CDM, CM, LM, RM, CAM, LW, RW, CF, ST
+      const positions: PlayerPosition[] = [
+        'GK',   // Goalkeeper
+        'CB',   // Center Back
+        'LB',   // Left Back
+        'RB',   // Right Back
+        'CDM',  // Defensive Midfielder
+        'CM',   // Central Midfielder
+        'LM',   // Left Midfielder
+        'RM',   // Right Midfielder
+        'CAM',  // Attacking Midfielder
+        'LW',   // Left Winger
+        'RW',   // Right Winger
+        'CF',   // Center Forward
+        'ST',   // Striker
+      ] as PlayerPosition[]
+      
+      const position = positions[i % positions.length]
+      const shirtNumber = i + 1
       const firstName = firstNames[i % firstNames.length]
       const lastName = lastNames[i % lastNames.length]
       const dob = new Date(1995 + (i % 10), i % 12, (i % 28) + 1)
@@ -98,7 +114,7 @@ async function main() {
           teamId: team.id,
           firstName,
           lastName,
-          position,
+          position: position as PlayerPosition,
           shirtNumber,
           dob,
         },
