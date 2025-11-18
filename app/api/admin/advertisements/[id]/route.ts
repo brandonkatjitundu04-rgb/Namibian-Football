@@ -6,9 +6,10 @@ import { firestore } from '@/lib/firestore'
 // GET single advertisement
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions)
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -18,7 +19,7 @@ export async function GET(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    const ad = await firestore.advertisement.findUnique(params.id)
+    const ad = await firestore.advertisement.findUnique(id)
     if (!ad) {
       return NextResponse.json({ error: 'Advertisement not found' }, { status: 404 })
     }
@@ -36,9 +37,10 @@ export async function GET(
 // PUT update advertisement
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions)
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -64,14 +66,14 @@ export async function PUT(
     if (startDate !== undefined) updateData.startDate = startDate ? new Date(startDate) : null
     if (endDate !== undefined) updateData.endDate = endDate ? new Date(endDate) : null
 
-    const ad = await firestore.advertisement.update(params.id, updateData)
+    const ad = await firestore.advertisement.update(id, updateData)
 
     // Log audit
     await firestore.auditLog.create({
       userId: session.user.id,
       action: 'UPDATE',
       entityType: 'Advertisement',
-      entityId: params.id,
+      entityId: id,
       changes: updateData,
     })
 
@@ -88,9 +90,10 @@ export async function PUT(
 // DELETE advertisement
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions)
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -100,14 +103,14 @@ export async function DELETE(
       return NextResponse.json({ error: 'Only super admin can delete advertisements' }, { status: 403 })
     }
 
-    await firestore.advertisement.delete(params.id)
+    await firestore.advertisement.delete(id)
 
     // Log audit
     await firestore.auditLog.create({
       userId: session.user.id,
       action: 'DELETE',
       entityType: 'Advertisement',
-      entityId: params.id,
+      entityId: id,
     })
 
     return NextResponse.json({ message: 'Advertisement deleted successfully' })

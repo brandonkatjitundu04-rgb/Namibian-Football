@@ -6,8 +6,9 @@ import { recalculateAndSaveLeagueTable } from '@/lib/table-calculator'
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   const session = await getServerSession(authOptions)
 
   if (!session) {
@@ -18,7 +19,7 @@ export async function PUT(
     const body = await request.json()
     const { homeTeamId, awayTeamId, kickoff, venue, status, homeScore, awayScore } = body
 
-    const fixture = await firestore.fixture.update(params.id, {
+    const fixture = await firestore.fixture.update(id, {
       homeTeamId,
       awayTeamId,
       kickoff: new Date(kickoff),
@@ -38,7 +39,7 @@ export async function PUT(
       userId: (session.user as any).id,
       action: 'UPDATE',
       entityType: 'Fixture',
-      entityId: params.id,
+      entityId: id,
       changes: body,
     })
 

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useSession } from 'next-auth/react'
+import { useUser } from '@clerk/nextjs'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { ImageUpload } from '@/components/admin/ImageUpload'
@@ -24,7 +24,7 @@ interface Advertisement {
 }
 
 export default function AdvertisementsPage() {
-  const { data: session } = useSession()
+  const { user } = useUser()
   const [ads, setAds] = useState<Advertisement[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
@@ -42,7 +42,9 @@ export default function AdvertisementsPage() {
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
-  const isSuperAdmin = session?.user?.role === 'SUPER_ADMIN'
+  // Check if user is super admin based on email or metadata
+  const isSuperAdmin = user?.emailAddresses?.[0]?.emailAddress === 'brandonkatjitundu@gmail.com' || 
+                       user?.publicMetadata?.role === 'SUPER_ADMIN'
 
   useEffect(() => {
     if (isSuperAdmin) {

@@ -1,18 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { getClerkUser, hasRole } from '@/lib/clerk-auth'
 import { firestore } from '@/lib/firestore'
 import bcrypt from 'bcryptjs'
 
 // GET all users (only SUPER_ADMIN can see all, ADMIN can see non-super-admins)
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session) {
+    const user = await getClerkUser()
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const userRole = session.user.role
+    const userRole = user.role
     if (userRole !== 'SUPER_ADMIN' && userRole !== 'ADMIN') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
@@ -40,14 +39,15 @@ export async function GET(request: NextRequest) {
 }
 
 // POST create new user (only SUPER_ADMIN)
+// Note: With Clerk, users are created through Clerk. This endpoint can be used to sync Clerk users to Firestore
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session) {
+    const user = await getClerkUser()
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    if (session.user.role !== 'SUPER_ADMIN') {
+    if (user.role !== 'SUPER_ADMIN') {
       return NextResponse.json({ error: 'Only super admin can create users' }, { status: 403 })
     }
 
@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
     const passwordHash = await bcrypt.hash(password, 10)
 
     // Create user
-    const user = await firestore.user.create({
+    const newUser = await firestore.user.create({
       email: email.toLowerCase(),
       name: name || null,
       passwordHash,
@@ -92,16 +92,16 @@ export async function POST(request: NextRequest) {
 
     // Log audit
     await firestore.auditLog.create({
-      userId: session.user.id,
+      userId: user.id,
       action: 'CREATE',
       entityType: 'User',
-      entityId: user.id,
+      entityId: newUser.id,
       changes: { email, name, role },
     })
 
     // Return user without password hash
-    const userAny = user as any
-    const { passwordHash: _, ...userWithoutPassword } = userAny
+    const newUserAny = newUser as any
+    const { passwordHash: _, ...userWithoutPassword } = newUserAny
     return NextResponse.json(userWithoutPassword, { status: 201 })
   } catch (error) {
     console.error('Error creating user:', error)

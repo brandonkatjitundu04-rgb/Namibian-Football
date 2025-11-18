@@ -7,22 +7,23 @@ import { recalculateAndSaveLeagueTable } from '@/lib/table-calculator'
 // POST recalculate league table from fixtures
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
     const session = await getServerSession(authOptions)
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    await recalculateAndSaveLeagueTable(params.id)
+    await recalculateAndSaveLeagueTable(id)
 
     // Log audit
     await firestore.auditLog.create({
       userId: session.user.id,
       action: 'RECALCULATE',
       entityType: 'LeagueTable',
-      entityId: params.id,
+      entityId: id,
     })
 
     return NextResponse.json({ message: 'Table recalculated successfully' })

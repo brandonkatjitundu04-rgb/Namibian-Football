@@ -4,10 +4,11 @@ import { firestore } from '@/lib/firestore'
 // GET single article by slug (public)
 export async function GET(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const article = await firestore.article.findBySlug(params.slug) as any
+    const { slug } = await params
+    const article = await firestore.article.findBySlug(slug) as any
 
     if (!article) {
       return NextResponse.json({ error: 'Article not found' }, { status: 404 })

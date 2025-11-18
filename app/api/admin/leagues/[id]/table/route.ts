@@ -6,15 +6,16 @@ import { firestore } from '@/lib/firestore'
 // GET league table
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
     const session = await getServerSession(authOptions)
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const tableRows = await firestore.tableRow.findByLeague(params.id, { includeTeam: true, orderBy: { position: 'asc' } })
+    const tableRows = await firestore.tableRow.findByLeague(id, { includeTeam: true, orderBy: { position: 'asc' } })
     
     return NextResponse.json(tableRows)
   } catch (error) {
@@ -29,8 +30,9 @@ export async function GET(
 // POST create new table row
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
     const session = await getServerSession(authOptions)
     if (!session) {
@@ -45,7 +47,7 @@ export async function POST(
     }
 
     const tableRow = await firestore.tableRow.upsert(teamId, {
-      leagueId: params.id,
+      leagueId: id,
       position: position || 1,
       played: played || 0,
       won: won || 0,
@@ -58,11 +60,11 @@ export async function POST(
     })
 
     // Fetch the created row with team data
-    const createdRow = await firestore.tableRow.findByLeague(params.id, {
+    const createdRow = await firestore.tableRow.findByLeague(id, {
       includeTeam: true,
       orderBy: { position: 'asc' }
     })
-    const newRow = createdRow.find((r: any) => r.teamId === teamId && r.leagueId === params.id)
+    const newRow = createdRow.find((r: any) => r.teamId === teamId && r.leagueId === id)
 
     // Log audit
     await firestore.auditLog.create({

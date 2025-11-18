@@ -6,15 +6,16 @@ import { firestore } from '@/lib/firestore'
 // GET single league
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions)
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const league = await firestore.league.findUnique(params.id)
+    const league = await firestore.league.findUnique(id)
     if (!league) {
       return NextResponse.json({ error: 'League not found' }, { status: 404 })
     }

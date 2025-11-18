@@ -1,17 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { getClerkUser } from '@/lib/clerk-auth'
 import { firestore } from '@/lib/firestore'
 
 // GET current user profile
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session) {
+    const clerkUser = await getClerkUser()
+    if (!clerkUser) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const user = await firestore.user.findById(session.user.id) as any
+    const user = await firestore.user.findById(clerkUser.id) as any
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
@@ -31,8 +30,8 @@ export async function GET(request: NextRequest) {
 // PUT update current user profile
 export async function PUT(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session) {
+    const clerkUser = await getClerkUser()
+    if (!clerkUser) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -44,14 +43,14 @@ export async function PUT(request: NextRequest) {
     if (bio !== undefined) updateData.bio = bio
     if (profilePicture !== undefined) updateData.profilePicture = profilePicture
 
-    const updatedUser = await firestore.user.update(session.user.id, updateData) as any
+    const updatedUser = await firestore.user.update(clerkUser.id, updateData) as any
 
     // Log audit
     await firestore.auditLog.create({
-      userId: session.user.id,
+      userId: clerkUser.id,
       action: 'UPDATE',
       entityType: 'User',
-      entityId: session.user.id,
+      entityId: clerkUser.id,
       changes: updateData,
     })
 

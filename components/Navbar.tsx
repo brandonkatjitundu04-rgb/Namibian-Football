@@ -2,8 +2,52 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton } from '@clerk/nextjs'
 import { cn } from '@/lib/utils'
 import { GenderToggle } from './GenderToggle'
+
+function AuthSection() {
+  return (
+    <>
+      <SignedOut>
+        <SignInButton mode="modal">
+          <button className="text-sm font-medium text-muted hover:text-foreground transition-colors px-3 py-1.5 rounded-md hover:bg-secondary-surface/50">
+            Sign In
+          </button>
+        </SignInButton>
+        <SignUpButton mode="modal">
+          <button className="text-sm font-medium bg-accent-400 hover:bg-accent-500 text-white px-4 py-1.5 rounded-md transition-colors">
+            Sign Up
+          </button>
+        </SignUpButton>
+      </SignedOut>
+      
+      <SignedIn>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/profile"
+            className="text-sm font-medium text-muted hover:text-foreground transition-colors"
+          >
+            Profile
+          </Link>
+          <UserButton 
+            appearance={{
+              elements: {
+                avatarBox: 'w-8 h-8',
+              },
+            }}
+          />
+          <Link
+            href="/admin"
+            className="text-sm font-medium text-muted hover:text-foreground transition-colors"
+          >
+            Admin
+          </Link>
+        </div>
+      </SignedIn>
+    </>
+  )
+}
 
 export function Navbar() {
   const pathname = usePathname()
@@ -46,12 +90,7 @@ export function Navbar() {
           </div>
           <div className="flex items-center gap-4">
             <GenderToggle />
-            <Link
-              href="/admin"
-              className="text-sm font-medium text-muted hover:text-foreground transition-colors"
-            >
-              Admin
-            </Link>
+            <AuthSection />
           </div>
         </div>
       </div>

@@ -1,13 +1,14 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { firestore } from '@/lib/firestore'
 import { calculateLeagueTable } from '@/lib/table-calculator'
 
 export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const table = await calculateLeagueTable(params.id)
+    const { id } = await params
+    const table = await calculateLeagueTable(id)
 
     // Get team details
     const teams = await firestore.team.findMany({

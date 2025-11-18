@@ -7,6 +7,9 @@ import { Card } from '@/components/ui/Card'
 import { Advertisement } from '@/components/Advertisement'
 import { useGender } from '@/lib/gender-context'
 
+// Force dynamic rendering since Navbar uses Clerk
+export const dynamic = 'force-dynamic'
+
 interface HomeData {
   league: any
   upcomingFixtures: any[]

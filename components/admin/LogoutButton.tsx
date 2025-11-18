@@ -1,13 +1,22 @@
 'use client'
 
-import { signOut } from 'next-auth/react'
+import { useClerk } from '@clerk/nextjs'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 
 export function LogoutButton() {
+  const { signOut } = useClerk()
+  const router = useRouter()
+
+  const handleLogout = async () => {
+    await signOut()
+    router.push('/')
+  }
+
   return (
     <Button
       variant="outline"
-      onClick={() => signOut({ callbackUrl: '/' })}
+      onClick={handleLogout}
     >
       Logout
     </Button>

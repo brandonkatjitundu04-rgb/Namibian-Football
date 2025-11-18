@@ -6,15 +6,16 @@ import { firestore } from '@/lib/firestore'
 // GET single article by ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions)
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const article = await firestore.article.findUnique(params.id)
+    const article = await firestore.article.findUnique(id)
 
     if (!article) {
       return NextResponse.json({ error: 'Article not found' }, { status: 404 })
@@ -33,9 +34,10 @@ export async function GET(
 // PUT update article
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions)
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -72,7 +74,7 @@ export async function PUT(
       updateData.publishedAt = publishedAt ? new Date(publishedAt) : null
     }
 
-    const article = await firestore.article.update(params.id, updateData)
+    const article = await firestore.article.update(id, updateData)
 
     if (!article) {
       return NextResponse.json({ error: 'Article not found' }, { status: 404 })
@@ -91,15 +93,16 @@ export async function PUT(
 // DELETE article
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions)
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    await firestore.article.delete(params.id)
+    await firestore.article.delete(id)
 
     return NextResponse.json({ message: 'Article deleted successfully' })
   } catch (error) {

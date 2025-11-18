@@ -1,6 +1,9 @@
 import Link from 'next/link'
 import { Card } from '@/components/ui/Card'
 
+// Force dynamic rendering since Navbar uses Clerk
+export const dynamic = 'force-dynamic'
+
 export default function NotFound() {
   return (
     <div className="container mx-auto px-4 py-16 max-w-2xl text-center">

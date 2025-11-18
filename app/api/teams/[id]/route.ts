@@ -1,12 +1,13 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { firestore } from '@/lib/firestore'
 
 export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const team = await firestore.team.findUnique(params.id, {
+    const { id } = await params
+    const team = await firestore.team.findUnique(id, {
       include: {
         league: true,
         players: true,

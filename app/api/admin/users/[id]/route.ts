@@ -7,8 +7,9 @@ import bcrypt from 'bcryptjs'
 // GET single user
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
     const session = await getServerSession(authOptions)
     if (!session) {
@@ -20,7 +21,7 @@ export async function GET(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    const user = await firestore.user.findById(params.id) as any
+    const user = await firestore.user.findById(id) as any
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
@@ -45,8 +46,9 @@ export async function GET(
 // PUT update user (only SUPER_ADMIN)
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
     const session = await getServerSession(authOptions)
     if (!session) {
@@ -57,7 +59,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Only super admin can update users' }, { status: 403 })
     }
 
-    const user = await firestore.user.findById(params.id) as any
+    const user = await firestore.user.findById(id) as any
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
@@ -97,14 +99,14 @@ export async function PUT(
       updateData.passwordHash = await bcrypt.hash(password, 10)
     }
 
-    const updatedUser = await firestore.user.update(params.id, updateData) as any
+    const updatedUser = await firestore.user.update(id, updateData) as any
 
     // Log audit
     await firestore.auditLog.create({
       userId: session.user.id,
       action: 'UPDATE',
       entityType: 'User',
-      entityId: params.id,
+      entityId: id,
       changes: updateData,
     })
 
@@ -123,8 +125,9 @@ export async function PUT(
 // DELETE user (only SUPER_ADMIN, cannot delete super admin)
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
     const session = await getServerSession(authOptions)
     if (!session) {
@@ -135,7 +138,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Only super admin can delete users' }, { status: 403 })
     }
 
-    const user = await firestore.user.findById(params.id) as any
+    const user = await firestore.user.findById(id) as any
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
@@ -156,14 +159,14 @@ export async function DELETE(
       )
     }
 
-    await firestore.user.delete(params.id)
+    await firestore.user.delete(id)
 
     // Log audit
     await firestore.auditLog.create({
       userId: session.user.id,
       action: 'DELETE',
       entityType: 'User',
-      entityId: params.id,
+      entityId: id,
       changes: { email: user.email },
     })
 
