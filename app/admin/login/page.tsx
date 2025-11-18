@@ -26,13 +26,24 @@ export default function LoginPage() {
       })
 
       if (result?.error) {
-        setError('Invalid email or password')
-      } else {
+        // Provide more specific error messages
+        if (result.error === 'CredentialsSignin') {
+          setError('Invalid email or password')
+        } else if (result.error.includes('NEXTAUTH_SECRET')) {
+          setError('Server configuration error. Please contact the administrator.')
+        } else {
+          setError(`Login failed: ${result.error}`)
+        }
+        console.error('Login error:', result.error)
+      } else if (result?.ok) {
         router.push('/admin')
         router.refresh()
+      } else {
+        setError('Login failed. Please try again.')
       }
-    } catch (err) {
-      setError('An error occurred. Please try again.')
+    } catch (err: any) {
+      console.error('Login exception:', err)
+      setError(err?.message || 'An error occurred. Please try again.')
     } finally {
       setLoading(false)
     }
